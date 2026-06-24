@@ -9,6 +9,7 @@
  */
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import student.PayrollGenerator;
@@ -113,6 +114,40 @@ public class TestPayrollGenerator {
         IEmployee employee = new HourlyEmployee("Luffy", "s192", 30.0, 20000.0, 4530.0, 0.0);
 
         assertEquals("HOURLY,Luffy,s192,30.0,0.0,20000.0,4530.0", employee.toCSV());
+    }
+    @Test
+    public void testHourlyEmployeePayrollWithOvertime() {
+        IEmployee employee = new HourlyEmployee("Luffy", "s192", 30.0, 20000.0, 4530.0, 0.0);
+
+        IPayStub payStub = employee.runPayroll(45.0);
+
+        assertEquals(1102.24, payStub.getPay(), 0.001);
+        assertEquals(322.76, payStub.getTaxesPaid(), 0.001);
+        assertEquals(21102.24, employee.getYTDEarnings(), 0.001);
+        assertEquals(4852.76, employee.getYTDTaxesPaid(), 0.001);
+        assertEquals("Luffy,1102.24,322.76,21102.24,4852.76", payStub.toCSV());
+    }
+    @Test
+    public void testSalaryEmployeePayroll() {
+        IEmployee employee = new SalaryEmployee("Nami", "s193", 200000.0, 17017.0, 4983.0, 1000.0);
+
+        IPayStub payStub = employee.runPayroll(60.0);
+
+        assertEquals(5672.33, payStub.getPay(), 0.001);
+        assertEquals(1661.0, payStub.getTaxesPaid(), 0.001);
+        assertEquals(22689.33, employee.getYTDEarnings(), 0.001);
+        assertEquals(6644.0, employee.getYTDTaxesPaid(), 0.001);
+        assertEquals("Nami,5672.33,1661.0,22689.33,6644.0", payStub.toCSV());
+    }
+    @Test
+    public void testNegativeHoursReturnNullAndDoNotUpdateYTD() {
+        IEmployee employee = new HourlyEmployee("Luffy", "s192", 30.0, 20000.0, 4530.0, 0.0);
+
+        IPayStub payStub = employee.runPayroll(-5.0);
+
+        assertNull(payStub);
+        assertEquals(20000.0, employee.getYTDEarnings(), 0.001);
+        assertEquals(4530.0, employee.getYTDTaxesPaid(), 0.001);
     }
 
 }

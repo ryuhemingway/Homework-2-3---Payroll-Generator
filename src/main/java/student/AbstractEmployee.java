@@ -2,6 +2,8 @@ package student;
 
 public abstract class AbstractEmployee implements IEmployee {
 
+    protected static final double TAX_RATE = 0.2265;
+
     private final String name;
     private final String id;
     private final double payRate;
@@ -49,6 +51,29 @@ public abstract class AbstractEmployee implements IEmployee {
         return pretaxDeductions;
     }
 
+    protected abstract double calculateGrossPay(double hoursWorked);
+
+    @Override
+    public IPayStub runPayroll(double hoursWorked) {
+        if (hoursWorked < 0) {
+            return null;
+        }
+
+        double grossPay = calculateGrossPay(hoursWorked);
+        double taxablePay = Math.max(0.0, grossPay - pretaxDeductions);
+
+        double unroundedTaxes = taxablePay * TAX_RATE;
+        double roundedTaxes = round(unroundedTaxes);
+
+        double payStubNetPay = round(grossPay - pretaxDeductions - unroundedTaxes);
+        double ytdNetPay = round(grossPay - pretaxDeductions - roundedTaxes);
+
+        ytdEarnings = round(ytdEarnings + ytdNetPay);
+        ytdTaxesPaid = round(ytdTaxesPaid + roundedTaxes);
+
+        return new PayStub(this, payStubNetPay, roundedTaxes);
+    }
+
     @Override
     public String toCSV() {
         return getEmployeeType() + ","
@@ -60,8 +85,7 @@ public abstract class AbstractEmployee implements IEmployee {
                 + ytdTaxesPaid;
     }
 
-    @Override
-    public IPayStub runPayroll(double hoursWorked) {
-        return null;
+    protected static double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }

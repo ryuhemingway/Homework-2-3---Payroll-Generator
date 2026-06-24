@@ -11,4 +11,17 @@ public class HourlyEmployee extends AbstractEmployee {
     public String getEmployeeType() {
         return "HOURLY";
     }
+
+    @Override
+    protected double calculateGrossPay(double hoursWorked) {
+        if (hoursWorked <= 40.0) {
+            return getPayRate() * hoursWorked;
+        }
+
+        double regularPay = getPayRate() * 40.0;
+        double overtimeHours = hoursWorked - 40.0;
+        double overtimePay = overtimeHours * getPayRate() * 1.5;
+
+        return regularPay + overtimePay;
+    }
 }

@@ -11,4 +11,9 @@ public class SalaryEmployee extends AbstractEmployee {
     public String getEmployeeType() {
         return "SALARY";
     }
+
+    @Override
+    protected double calculateGrossPay(double hoursWorked) {
+        return getPayRate() / 24.0;
+    }
 }
