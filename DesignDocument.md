@@ -25,10 +25,14 @@ I am going to create a PayStub class which will be the main file to store the pa
 Then payroll generator will parse the CSV file, use the builder to create the obejcts and match time cards to the employee ID. It should finally run payroll and create the output file.
 You should feel free to number your brainstorm. 
 
-1. Test that the `Employee` class properly returns `name` from `getName()`
-2. Test that the `Employee` class properly returns `id` from `getId()`
-3. continue to add your brainstorm here (you don't need to super formal - this is a brainstorm) - yes, you can change the bullets above to something that fits your design.
-
+Hrainstorming Tests:
+1. Employee properly returns their name from getName()
+2. Employee properly returns their ID from getID()
+3. Employee properly returns their pay rate from getPayRate()
+4. TimeCard stores and returns apprpriate employee ID
+5. TimeCard Stores and returns the correct amount of hours worked.
+6. Hourly employee is paid regular pay for <=40 hrs of work.
+7. Hourly employee paid overtime pay for >=40 hrs of work
 
 
 ## (FINAL DESIGN): Class Diagram
