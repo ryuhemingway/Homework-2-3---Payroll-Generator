@@ -25,7 +25,7 @@ I am going to create a PayStub class which will be the main file to store the pa
 Then payroll generator will parse the CSV file, use the builder to create the obejcts and match time cards to the employee ID. It should finally run payroll and create the output file.
 You should feel free to number your brainstorm. 
 
-Hrainstorming Tests:
+Brainstorming Tests:
 1. Employee properly returns their name from getName()
 2. Employee properly returns their ID from getID()
 3. Employee properly returns their pay rate from getPayRate()

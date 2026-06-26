@@ -9,6 +9,7 @@
  */
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,6 +25,7 @@ import student.PayStub;
 import student.IEmployee;
 import student.HourlyEmployee;
 import student.SalaryEmployee;
+import student.Builder;
 
 public class TestPayrollGenerator {
 
@@ -148,6 +150,85 @@ public class TestPayrollGenerator {
         assertNull(payStub);
         assertEquals(20000.0, employee.getYTDEarnings(), 0.001);
         assertEquals(4530.0, employee.getYTDTaxesPaid(), 0.001);
+    }
+    @Test
+    public void testBuilderCreatesHourlyEmployeeFromCSV() {
+        IEmployee employee = Builder.buildEmployeeFromCSV("HOURLY,Luffy,s192,30.00,0,20000,4530");
+
+        assertEquals("HOURLY", employee.getEmployeeType());
+        assertEquals("Luffy", employee.getName());
+        assertEquals("s192", employee.getID());
+        assertEquals(30.0, employee.getPayRate(), 0.001);
+        assertEquals(0.0, employee.getPretaxDeductions(), 0.001);
+        assertEquals(20000.0, employee.getYTDEarnings(), 0.001);
+        assertEquals(4530.0, employee.getYTDTaxesPaid(), 0.001);
+    }
+    @Test
+    public void testBuilderCreatesSalaryEmployeeFromCSV() {
+        IEmployee employee = Builder.buildEmployeeFromCSV("SALARY,Nami,s193,200000,1000,17017,4983");
+
+        assertEquals("SALARY", employee.getEmployeeType());
+        assertEquals("Nami", employee.getName());
+        assertEquals("s193", employee.getID());
+        assertEquals(200000.0, employee.getPayRate(), 0.001);
+        assertEquals(1000.0, employee.getPretaxDeductions(), 0.001);
+        assertEquals(17017.0, employee.getYTDEarnings(), 0.001);
+        assertEquals(4983.0, employee.getYTDTaxesPaid(), 0.001);
+    }
+    @Test
+    public void testBuilderCreatesTimeCardFromCSV() {
+        ITimeCard timeCard = Builder.buildTimeCardFromCSV("s192,45");
+
+        assertEquals("s192", timeCard.getEmployeeID());
+        assertEquals(45.0, timeCard.getHoursWorked(), 0.001);
+    }
+    @Test
+    public void testBuilderRejectsBadCSV() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Builder.buildEmployeeFromCSV("HOURLY,Luffy,s192"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> Builder.buildEmployeeFromCSV("CONTRACTOR,Zoro,s999,50,0,0,0"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> Builder.buildEmployeeFromCSV("HOURLY,Luffy,s192,notANumber,0,20000,4530"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> Builder.buildTimeCardFromCSV("s192,notANumber"));
+    }
+    @Test
+    public void testFinalEmployeeFileIsUpdated() throws IOException {
+        Path employees = tempDir.resolve("employees_update_test.csv");
+        Files.copy(Paths.get("resources/employees.csv"), employees);
+
+        Path payStubs = tempDir.resolve("paystubs_update_test.csv");
+
+        String[] args = {
+                "-e", employees.toString(),
+                "-t", "resources/time_cards.csv",
+                "-o", payStubs.toString()
+        };
+
+        PayrollGenerator.main(args);
+
+        String expectedEmployees = Files
+                .readString(Paths.get("resources/original/employees_original_solution.csv"));
+
+        String actualEmployees = Files.readString(employees);
+
+        assertEquals(expectedEmployees, actualEmployees);
+    }
+
+    @Test
+    public void testHourlyEmployeePayrollWithoutOvertime() {
+        IEmployee employee = new HourlyEmployee("Luffy", "s192", 30.0, 20000.0, 4530.0, 0.0);
+
+        IPayStub payStub = employee.runPayroll(40.0);
+
+        assertEquals(928.2, payStub.getPay(), 0.001);
+        assertEquals(271.8, payStub.getTaxesPaid(), 0.001);
+        assertEquals(20928.2, employee.getYTDEarnings(), 0.001);
+        assertEquals(4801.8, employee.getYTDTaxesPaid(), 0.001);
     }
 
 }
